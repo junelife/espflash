@@ -157,13 +157,23 @@ fn flash(args: FlashArgs, config: &Config) -> Result<()> {
     let metadata = PackageMetadata::load(&args.build_args.package)?;
     let cargo_config = CargoConfig::load(&metadata.workspace_root, &metadata.package_root);
 
+    let build_ctx =
+        build(&args.build_args, &cargo_config).wrap_err("Failed to build project")?;
+
     let mut flasher = connect(&args.connect_args, config)?;
     let chip = flasher.chip();
     let target = chip.into_target();
     let target_xtal_freq = target.crystal_freq(flasher.connection())?;
 
-    let build_ctx =
-        build(&args.build_args, &cargo_config, chip).wrap_err("Failed to build project")?;
+    let build_target = &args.build_args
+        .target
+        .as_deref()
+        .or_else(|| cargo_config.target())
+        .ok_or_else(|| NoTargetError::new(Some(chip)))?;
+
+    if !chip.into_target().supports_build_target(build_target) {
+        return Err(UnsupportedTargetError::new(build_target, chip).into());
+    }
 
     // Read the ELF data from the build path and load it to the target.
     let elf_data = fs::read(build_ctx.artifact_path).into_diagnostic()?;
@@ -246,17 +256,12 @@ fn flash(args: FlashArgs, config: &Config) -> Result<()> {
 fn build(
     build_options: &BuildArgs,
     cargo_config: &CargoConfig,
-    chip: Chip,
 ) -> Result<BuildContext> {
     let target = build_options
         .target
         .as_deref()
         .or_else(|| cargo_config.target())
-        .ok_or_else(|| NoTargetError::new(Some(chip)))?;
-
-    if !chip.into_target().supports_build_target(target) {
-        return Err(UnsupportedTargetError::new(target, chip).into());
-    }
+        .ok_or_else(|| NoTargetError::new(None))?;
 
     // The 'build-std' unstable cargo feature is required to enable
     // cross-compilation for Xtensa targets. If it has not been set then we
@@ -408,7 +413,7 @@ fn save_image(args: SaveImageArgs) -> Result<()> {
     let metadata = PackageMetadata::load(&args.build_args.package)?;
     let cargo_config = CargoConfig::load(&metadata.workspace_root, &metadata.package_root);
 
-    let build_ctx = build(&args.build_args, &cargo_config, args.save_image_args.chip)?;
+    let build_ctx = build(&args.build_args, &cargo_config)?;
     let elf_data = fs::read(build_ctx.artifact_path).into_diagnostic()?;
 
     let bootloader = args
