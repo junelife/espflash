@@ -265,6 +265,7 @@ fn flash(args: FlashArgs, config: &Config) -> Result<()> {
             &elf_data,
             bootloader,
             partition_table,
+            args.flash_args.partition_table_offset,
             args.flash_args.format.or(metadata.format),
             args.build_args.flash_config_args.flash_mode,
             args.build_args.flash_config_args.flash_size,
