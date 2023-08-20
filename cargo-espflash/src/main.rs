@@ -265,6 +265,7 @@ fn flash(args: FlashArgs, config: &Config) -> Result<()> {
             &elf_data,
             bootloader,
             partition_table,
+            args.flash_args.target_app_partition,
             args.flash_args.format.or(metadata.format),
             args.build_args.flash_config_args.flash_mode,
             args.build_args.flash_config_args.flash_size,
@@ -505,6 +506,7 @@ fn save_image(args: SaveImageArgs) -> Result<()> {
         args.save_image_args.merge,
         bootloader,
         partition_table,
+        args.save_image_args.target_app_partition,
         args.save_image_args.skip_padding,
     )?;
 
