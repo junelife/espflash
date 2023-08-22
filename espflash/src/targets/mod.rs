@@ -298,6 +298,7 @@ pub trait Target: ReadEFuse {
         bootloader: Option<Vec<u8>>,
         partition_table: Option<PartitionTable>,
         partition_table_offset: Option<u32>,
+        target_app_partition: Option<String>,
         image_format: Option<ImageFormatKind>,
         chip_revision: Option<(u32, u32)>,
         flash_mode: Option<FlashMode>,
