@@ -75,6 +75,7 @@ impl Target for Esp8266 {
         _bootloader: Option<Vec<u8>>,
         _partition_table: Option<PartitionTable>,
         _partition_table_offset: Option<u32>,
+        _target_app_partition: Option<String>,
         image_format: Option<ImageFormatKind>,
         _chip_revision: Option<(u32, u32)>,
         flash_mode: Option<FlashMode>,
