@@ -24,6 +24,7 @@ pub struct IdfBootloaderFormat<'a> {
     params: Esp32Params,
     bootloader: Cow<'a, [u8]>,
     partition_table: PartitionTable,
+    partition_table_offset: u32,
     flash_segment: RomSegment<'a>,
     app_size: u32,
     part_size: u32,
@@ -35,6 +36,7 @@ impl<'a> IdfBootloaderFormat<'a> {
         chip: Chip,
         params: Esp32Params,
         partition_table: Option<PartitionTable>,
+        partition_table_offset: Option<u32>,
         bootloader: Option<Vec<u8>>,
         flash_mode: Option<FlashMode>,
         flash_size: Option<FlashSize>,
@@ -47,6 +49,8 @@ impl<'a> IdfBootloaderFormat<'a> {
         } else {
             Cow::Borrowed(params.default_bootloader)
         };
+
+        let partition_table_offset = partition_table_offset.unwrap_or(params.partition_addr);
 
         // fetch the generated header from the bootloader
         let mut header: ImageHeader = *from_bytes(&bootloader[0..size_of::<ImageHeader>()]);
@@ -171,6 +175,7 @@ impl<'a> IdfBootloaderFormat<'a> {
             params,
             bootloader,
             partition_table,
+            partition_table_offset,
             flash_segment,
             app_size,
             part_size,
@@ -189,7 +194,7 @@ impl<'a> ImageFormat<'a> for IdfBootloaderFormat<'a> {
                 data: Cow::Borrowed(&self.bootloader),
             })
             .chain(once(RomSegment {
-                addr: self.params.partition_addr,
+                addr: self.partition_table_offset,
                 data: Cow::Owned(self.partition_table.to_bin().unwrap()),
             }))
             .chain(once(self.flash_segment.borrow())),
@@ -313,9 +318,18 @@ pub mod tests {
         let expected_bin = fs::read("tests/resources/esp32_hal_blinky.bin").unwrap();
 
         let image = ElfFirmwareImage::try_from(input_bytes.as_slice()).unwrap();
-        let flash_image =
-            IdfBootloaderFormat::new(&image, Chip::Esp32, PARAMS, None, None, None, None, None)
-                .unwrap();
+        let flash_image = IdfBootloaderFormat::new(
+            &image,
+            Chip::Esp32,
+            PARAMS,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
 
         let segments = flash_image.flash_segments().collect::<Vec<_>>();
         assert_eq!(segments.len(), 3);

@@ -106,6 +106,8 @@ pub struct FlashArgs {
     /// Path to a CSV file containing partition table
     #[arg(long, value_name = "FILE")]
     pub partition_table: Option<PathBuf>,
+    #[arg(long)]
+    pub partition_table_offset: Option<u32>,
     /// Load the application to RAM instead of Flash
     #[arg(long)]
     pub ram: bool,
@@ -330,6 +332,7 @@ pub fn save_elf_as_image(
             &image,
             bootloader,
             partition_table,
+            None,
             image_format,
             None,
             flash_mode,
@@ -368,6 +371,7 @@ pub fn save_elf_as_image(
     } else {
         let image = chip.into_target().get_flash_image(
             &image,
+            None,
             None,
             None,
             image_format,
@@ -451,6 +455,7 @@ pub fn flash_elf_image(
     elf_data: &[u8],
     bootloader: Option<&Path>,
     partition_table: Option<PartitionTable>,
+    partition_table_offset: Option<u32>,
     image_format: Option<ImageFormatKind>,
     flash_mode: Option<FlashMode>,
     flash_size: Option<FlashSize>,
@@ -473,6 +478,7 @@ pub fn flash_elf_image(
         elf_data,
         bootloader,
         partition_table,
+        partition_table_offset,
         image_format,
         flash_mode,
         flash_size,
