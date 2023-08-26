@@ -7,6 +7,7 @@
 //! [cargo-espflash]: https://crates.io/crates/cargo-espflash
 //! [espflash]: https://crates.io/crates/espflash
 
+use std::num::ParseIntError;
 use std::{
     collections::HashMap,
     fs,
@@ -106,7 +107,7 @@ pub struct FlashArgs {
     /// Path to a CSV file containing partition table
     #[arg(long, value_name = "FILE")]
     pub partition_table: Option<PathBuf>,
-    #[arg(long)]
+    #[arg(long, value_parser = parse_uint32)]
     pub partition_table_offset: Option<u32>,
     /// Label of target app partition
     #[arg(long, value_name = "LABEL")]
@@ -676,4 +677,9 @@ fn pretty_print(table: PartitionTable) {
     }
 
     println!("{pretty}");
+}
+
+/// Parses a string as a 32-bit unsigned integer.
+pub fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
+    parse_int::parse(input)
 }

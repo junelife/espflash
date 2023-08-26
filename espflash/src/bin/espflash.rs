@@ -1,7 +1,6 @@
 use std::{
     fs::{self, File},
     io::Read,
-    num::ParseIntError,
     path::PathBuf,
 };
 
@@ -9,7 +8,7 @@ use clap::{Args, CommandFactory, Parser, Subcommand};
 use espflash::{
     cli::{
         self, board_info, completions, config::Config, connect, erase_partitions, flash_elf_image,
-        monitor::monitor, parse_partition_table, partition_table, print_board_info,
+        monitor::monitor, parse_partition_table, parse_uint32, partition_table, print_board_info,
         save_elf_as_image, serial_monitor, CompletionsArgs, ConnectArgs, EraseFlashArgs,
         ErasePartsArgs, EspflashProgress, FlashConfigArgs, MonitorArgs, PartitionTableArgs,
     },
@@ -123,11 +122,6 @@ struct WriteBinArgs {
     /// Connection configuration
     #[clap(flatten)]
     connect_args: ConnectArgs,
-}
-
-/// Parses a string as a 32-bit unsigned integer.
-fn parse_uint32(input: &str) -> Result<u32, ParseIntError> {
-    parse_int::parse(input)
 }
 
 fn main() -> Result<()> {
