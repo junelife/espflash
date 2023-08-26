@@ -879,6 +879,9 @@ impl Flasher {
             })?;
         sleep(Duration::from_secs_f32(0.05));
         self.connection.flush()?;
+
+        self.connection.reset()?;
+
         Ok(())
     }
 
