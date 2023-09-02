@@ -194,6 +194,22 @@ pub struct ErasePartsArgs {
     pub partition_table: PathBuf,
 }
 
+/// Erase specified region of flash
+#[derive(Debug, Args)]
+pub struct EraseRegionArgs {
+    /// Connection configuration
+    #[clap(flatten)]
+    pub connect_args: ConnectArgs,
+
+    /// Offset to start erasing from
+    #[arg(value_name = "OFFSET", value_parser = parse_uint32)]
+    pub addr: u32,
+
+    /// Size of the region to erase
+    #[arg(value_name = "SIZE", value_parser = parse_uint32)]
+    pub size: u32,
+}
+
 /// Select a serial port and establish a connection with a target device
 pub fn connect(args: &ConnectArgs, config: &Config) -> Result<Flasher> {
     let port_info = get_serial_port_info(args, config)?;
