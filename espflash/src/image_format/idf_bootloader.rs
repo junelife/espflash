@@ -154,7 +154,7 @@ impl<'a> IdfBootloaderFormat<'a> {
         if let Some(target_partition) = target_app_partition {
             partition_table
                 .find(&target_partition)
-                .ok_or_else(|| Error::AppPartitionNotFound)?
+                .ok_or(Error::AppPartitionNotFound)?
         } else {
 
             // The default partition table contains the "factory" partition, and if a user
@@ -165,7 +165,7 @@ impl<'a> IdfBootloaderFormat<'a> {
             partition_table
                 .find("factory")
                 .or_else(|| partition_table.find_by_type(Type::App))
-                .ok_or_else(|| Error::AppPartitionNotFound)?
+                .ok_or(Error::AppPartitionNotFound)?
         };
 
         let app_size = data.len() as u32;
