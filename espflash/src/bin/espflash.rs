@@ -5,6 +5,7 @@ use std::{
 };
 
 use clap::{Args, CommandFactory, Parser, Subcommand};
+use espflash::cli::EraseRegionArgs;
 use espflash::{
     cli::{
         self, board_info, completions, config::Config, connect, erase_partitions, flash_elf_image,
@@ -45,6 +46,8 @@ enum Commands {
     EraseFlash(EraseFlashArgs),
     /// Erase specified partitions
     EraseParts(ErasePartsArgs),
+    /// Erase specified region
+    EraseRegion(EraseRegionArgs),
     /// Flash an application in ELF format to a connected target device
     ///
     /// Given a path to an ELF file, first convert it into the appropriate
@@ -148,6 +151,7 @@ fn main() -> Result<()> {
         Commands::Completions(args) => completions(&args, &mut Cli::command(), "espflash"),
         Commands::EraseFlash(args) => erase_flash(args, &config),
         Commands::EraseParts(args) => erase_parts(args, &config),
+        Commands::EraseRegion(args) => erase_region(args, &config),
         Commands::Flash(args) => flash(args, &config),
         Commands::Monitor(args) => serial_monitor(args, &config),
         Commands::PartitionTable(args) => partition_table(args),
@@ -173,6 +177,19 @@ fn erase_parts(args: ErasePartsArgs, config: &Config) -> Result<()> {
         Some(args.erase_parts),
         None,
     )?;
+    flash.connection().reset()?;
+
+    Ok(())
+}
+
+fn erase_region(args: EraseRegionArgs, config: &Config) -> Result<()> {
+    let mut flash = connect(&args.connect_args, config)?;
+    info!(
+        "Erasing region of 0x{:x}B at 0x{:08x}",
+        args.addr, args.size
+    );
+    flash.erase_region(args.addr, args.size)?;
+    info!("Resetting target device");
     flash.connection().reset()?;
 
     Ok(())
