@@ -184,8 +184,9 @@ fn erase_parts(args: ErasePartsArgs, config: &Config) -> Result<()> {
 
 fn erase_region(args: EraseRegionArgs, config: &Config) -> Result<()> {
     let mut flash = connect(&args.connect_args, config)?;
+
     info!(
-        "Erasing region of 0x{:x}B at 0x{:08x}",
+        "Erasing region at 0x{:08x} (0x{:x} bytes)",
         args.addr, args.size
     );
     flash.erase_region(args.addr, args.size)?;
