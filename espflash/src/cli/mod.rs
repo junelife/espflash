@@ -40,7 +40,7 @@ pub mod monitor;
 mod serial;
 
 /// Establish a connection with a target device
-#[derive(Debug, Args)]
+#[derive(Debug, Args, Clone)]
 pub struct ConnectArgs {
     /// Baud rate at which to communicate with target device
     #[arg(short = 'b', long, env = "ESPFLASH_BAUD")]
